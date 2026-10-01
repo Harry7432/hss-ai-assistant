@@ -35,7 +35,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --strict-markers"
+addopts = "-v --strict-markers -m 'not eval'"
 markers = [
     "eval: RAG quality evaluation benchmarks (may require live API)",
     "integration: Integration tests requiring filesystem persistence",

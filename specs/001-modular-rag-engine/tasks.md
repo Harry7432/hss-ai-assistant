@@ -12,7 +12,7 @@
 
 | Requisito / NFR | User Story | Fase | Tarefas Correspondentes | Status | Critério de Sucesso (SC) | Critério de Verificação |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | Fundação | Fase 1 | 1.1, 1.4, 1.5 | [ ] Pendente | SC-001 | `test_config.py` valida variáveis, tipos e padrões (1000/200, threshold calibrado na Task 3.3, 20% prune) |
+| **FR-001** | Fundação | Fase 1 | 1.1, 1.4, 1.5 | [x] Concluído | SC-001 | `test_config.py` valida variáveis, tipos e padrões (1000/200, threshold calibrado na Task 3.3, 20% prune) |
 | **FR-002** | Fundação | Fase 1, 5 | 1.4, 1.5, 5.1, 5.3 | [ ] Pendente | SC-001, SC-010 | `test_config.py` e `exceptions.py` tratam exceções; ausência de contexto é retorno estruturado; mapeamento para `QuotaExceededError` |
 | **FR-003** | US 1 (P1) | Fase 2 | 2.1, 2.2 | [ ] Pendente | SC-003 | `test_loader.py` valida páginas 1-indexed, skip gracioso em PDF sem texto e pasta `base/` vazia |
 | **FR-004** | US 1 (P1) | Fase 2 | 2.3, 2.4 | [ ] Pendente | SC-002 | `test_splitter.py` valida chunks (1000/200), `doc_hash` SHA-256 completo e IDs `{doc_hash}_{chunk_index}` |
@@ -41,11 +41,22 @@
 > **Aviso de Integridade**: Todas as tarefas iniciam desmarcadas (`[ ]`). Uma tarefa só pode ser marcada como concluída (`[x]`) com evidência colada comprovando aprovação (saída de execução do `pytest`, caminho do arquivo de teste e número de linha).
 
 ### Fase 1: Ambiente, Dependências e Configurações Base
-- [ ] **Task 1.1**: Criar `.env.example` documentando todas as variáveis, padrões calibrados e tipos (`OPENAI_API_KEY`, `CHUNK_SIZE=1000`, `CHUNK_OVERLAP=200`, `RETRIEVAL_K=4`, `RELEVANCE_THRESHOLD=0.35`, `MAX_PRUNE_PERCENTAGE=20`, `LLM_MODEL=gpt-4o-mini`, `EMBEDDING_MODEL=text-embedding-3-small`, `LANGCHAIN_TRACING_V2=false`).
-- [ ] **Task 1.2**: Criar `requirements.txt` e `pyproject.toml` contendo dependências de produção e testes, registrando formalmente o marker `eval` e definindo `addopts = "-m 'not eval'"` para isolar suíte de avaliação do `pytest` padrão.
-- [ ] **Task 1.3**: Configurar ambiente virtual local `.venv` e validar execução isolada do interpretador Python.
-- [ ] **Task 1.4**: Escrever testes unitários em `tests/unit/test_config.py` validando leitura de variáveis, tipos e valores padrão padronizados, e configurar fixtures em `tests/conftest.py` com `DeterministicFakeEmbedding` e coleções Chroma ephemeral com nomes únicos via UUID.
-- [ ] **Task 1.5**: Implementar `src/core/config.py` e hierarquia de exceções em `src/core/exceptions.py` (`IngestionError`, `VectorStoreUnavailableError`, `APIConnectionError`, `QuotaExceededError`), garantindo que ausência de contexto relevante seja retorno estruturado e não exceção.
+- [x] **Task 1.1**: Criar `.env.example` documentando todas as variáveis, padrões calibrados e tipos (`OPENAI_API_KEY`, `CHUNK_SIZE=1000`, `CHUNK_OVERLAP=200`, `RETRIEVAL_K=4`, `RELEVANCE_THRESHOLD=0.35`, `MAX_PRUNE_PERCENTAGE=20`, `LLM_MODEL=gpt-4o-mini`, `EMBEDDING_MODEL=text-embedding-3-small`, `LANGCHAIN_TRACING_V2=false`).
+- [x] **Task 1.2**: Criar `requirements.txt` e `pyproject.toml` contendo dependências de produção e testes, registrando formalmente o marker `eval` e definindo `addopts = "-m 'not eval'"` para isolar suíte de avaliação do `pytest` padrão.
+- [x] **Task 1.3**: Configurar ambiente virtual local `.venv` e validar execução isolada do interpretador Python.
+- [x] **Task 1.4**: Escrever testes unitários em `tests/unit/test_config.py` validando leitura de variáveis, tipos e valores padrão padronizados, e configurar fixtures em `tests/conftest.py` com `DeterministicFakeEmbedding` e coleções Chroma ephemeral com nomes únicos via UUID.
+- [x] **Task 1.5**: Implementar `src/core/config.py` e hierarquia de exceções em `src/core/exceptions.py` (`IngestionError`, `VectorStoreUnavailableError`, `APIConnectionError`, `QuotaExceededError`), garantindo que ausência de contexto relevante seja retorno estruturado e não exceção.
+
+> **Evidência de Execução (`tests/unit/test_config.py:7-71`)**:
+> ```text
+> tests/unit/test_config.py::test_settings_default_values PASSED           [ 16%]
+> tests/unit/test_config.py::test_settings_custom_values PASSED            [ 33%]
+> tests/unit/test_config.py::test_settings_validation_invalid_chunk_overlap PASSED [ 50%]
+> tests/unit/test_config.py::test_settings_validation_invalid_threshold PASSED [ 66%]
+> tests/unit/test_config.py::test_settings_validation_invalid_max_prune_percentage PASSED [ 83%]
+> tests/unit/test_config.py::test_get_settings_singleton PASSED            [100%]
+> ======================== 6 passed, 1 warning in 0.09s =========================
+> ```
 
 ### Fase 2: Ingestão e Indexação Idempotente com Manifesto, SHA-256 e Sincronização Segura (User Story 1 - P1)
 - [ ] **Task 2.1**: Escrever testes unitários para o carregador em `tests/unit/test_loader.py` cobrindo extração de páginas 1-indexed, metadados padronizados (`file_name`, `page`, `source`), tratamento gracioso de PDFs sem texto/escaneados (warning e skip) e diretório `base/` vazio (warning e 0 documentos sem erro).

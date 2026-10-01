@@ -35,7 +35,10 @@ class Settings(BaseModel):
         default_factory=lambda: int(os.getenv("RETRIEVAL_K", "4"))
     )
     relevance_threshold: float = Field(
-        default_factory=lambda: float(os.getenv("RELEVANCE_THRESHOLD", "0.7"))
+        default_factory=lambda: float(os.getenv("RELEVANCE_THRESHOLD", "0.35"))
+    )
+    max_prune_percentage: int = Field(
+        default_factory=lambda: int(os.getenv("MAX_PRUNE_PERCENTAGE", "20"))
     )
 
     langchain_tracing_v2: bool = Field(
@@ -69,6 +72,13 @@ class Settings(BaseModel):
     def validate_relevance_threshold(cls, v: float) -> float:
         if not (0.0 <= v <= 1.0):
             raise ConfigurationError("relevance_threshold deve estar entre 0.0 e 1.0.")
+        return v
+
+    @field_validator("max_prune_percentage")
+    @classmethod
+    def validate_max_prune_percentage(cls, v: int) -> int:
+        if not (1 <= v <= 100):
+            raise ConfigurationError("max_prune_percentage deve estar entre 1 e 100.")
         return v
 
     @field_validator("retrieval_k")
