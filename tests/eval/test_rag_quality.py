@@ -6,6 +6,9 @@ from src.generation.rag_engine import RAGEngine
 from src.retrieval.search import RetrievedChunk
 
 
+pytestmark = pytest.mark.eval
+
+
 @pytest.fixture
 def eval_dataset():
     dataset_path = Path(__file__).parent / "eval_dataset.json"
@@ -13,6 +16,7 @@ def eval_dataset():
         return json.load(f)
 
 
+@pytest.mark.eval
 def test_rag_quality_benchmarks(in_memory_chroma, mock_llm_factory, eval_dataset):
     """Executa a suíte de avaliação de qualidade do RAG (RAG Eval) sobre o dataset anotado."""
     # Prepara LLM simulado com respostas fundamentadas

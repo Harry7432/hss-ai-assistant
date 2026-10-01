@@ -14,8 +14,8 @@
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FR-001** | Fundação | Fase 1 | 1.1, 1.4, 1.5 | [x] Concluído | SC-001 | `test_config.py` valida variáveis, tipos e padrões (1000/200, threshold calibrado na Task 3.3, 20% prune) |
 | **FR-002** | Fundação | Fase 1, 5 | 1.4, 1.5, 5.1, 5.3 | [ ] Pendente | SC-001, SC-010 | `test_config.py` e `exceptions.py` tratam exceções; ausência de contexto é retorno estruturado; mapeamento para `QuotaExceededError` |
-| **FR-003** | US 1 (P1) | Fase 2 | 2.1, 2.2 | [ ] Pendente | SC-003 | `test_loader.py` valida páginas 1-indexed, skip gracioso em PDF sem texto e pasta `base/` vazia |
-| **FR-004** | US 1 (P1) | Fase 2 | 2.3, 2.4 | [ ] Pendente | SC-002 | `test_splitter.py` valida chunks (1000/200), `doc_hash` SHA-256 completo e IDs `{doc_hash}_{chunk_index}` |
+| **FR-003** | US 1 (P1) | Fase 2 | 2.1, 2.2 | [x] Concluído | SC-003 | `test_loader.py` valida páginas 1-indexed, skip gracioso em PDF sem texto e pasta `base/` vazia |
+| **FR-004** | US 1 (P1) | Fase 2 | 2.3, 2.4 | [x] Concluído | SC-002 | `test_splitter.py` valida chunks (1000/200), `doc_hash` SHA-256 completo e IDs `{doc_hash}_{chunk_index}` |
 | **FR-005** | US 1 (P1) | Fase 2 | 2.5, 2.6 | [ ] Pendente | SC-002, SC-003 | `test_vector_store.py` e `test_persistence.py` validam `paths: list`, rename vs cópia, tmp+rename por último, reconciliação, fingerprint sem duplicar `collection_name`, coleção nova ativa no manifesto e remoção antiga via `--prune` |
 | **FR-006** | US 2 (P2) | Fase 3 | 3.1, 3.2, 3.3 | [ ] Pendente | SC-004 | `test_retrieval.py` valida cosseno via `configuration={"hnsw": {"space": "cosine"}}` (1.5.9), ordenação e calibração na Task 3.3 (dataset separado fora do pytest padrão com API real) |
 | **FR-007** | US 2 (P2) | Fase 3 | 3.1, 3.2 | [ ] Pendente | SC-004 | Asserções e documentação tratam score estritamente como heurística geométrica de proximidade |
@@ -47,22 +47,41 @@
 - [x] **Task 1.4**: Escrever testes unitários em `tests/unit/test_config.py` validando leitura de variáveis, tipos e valores padrão padronizados, e configurar fixtures em `tests/conftest.py` com `DeterministicFakeEmbedding` e coleções Chroma ephemeral com nomes únicos via UUID.
 - [x] **Task 1.5**: Implementar `src/core/config.py` e hierarquia de exceções em `src/core/exceptions.py` (`IngestionError`, `VectorStoreUnavailableError`, `APIConnectionError`, `QuotaExceededError`), garantindo que ausência de contexto relevante seja retorno estruturado e não exceção.
 
-> **Evidência de Execução (`tests/unit/test_config.py:7-71`)**:
+> **Evidência de Execução (`tests/unit/test_config.py:7-71`, `tests/unit/test_exceptions.py:11-30`)**:
 > ```text
-> tests/unit/test_config.py::test_settings_default_values PASSED           [ 16%]
-> tests/unit/test_config.py::test_settings_custom_values PASSED            [ 33%]
-> tests/unit/test_config.py::test_settings_validation_invalid_chunk_overlap PASSED [ 50%]
-> tests/unit/test_config.py::test_settings_validation_invalid_threshold PASSED [ 66%]
-> tests/unit/test_config.py::test_settings_validation_invalid_max_prune_percentage PASSED [ 83%]
-> tests/unit/test_config.py::test_get_settings_singleton PASSED            [100%]
-> ======================== 6 passed, 1 warning in 0.09s =========================
+> tests/unit/test_config.py::test_settings_default_values PASSED           [ 12%]
+> tests/unit/test_config.py::test_settings_custom_values PASSED            [ 25%]
+> tests/unit/test_config.py::test_settings_validation_invalid_chunk_overlap PASSED [ 37%]
+> tests/unit/test_config.py::test_settings_validation_invalid_threshold PASSED [ 50%]
+> tests/unit/test_config.py::test_settings_validation_invalid_max_prune_percentage PASSED [ 62%]
+> tests/unit/test_config.py::test_get_settings_singleton PASSED            [ 75%]
+> tests/unit/test_exceptions.py::test_exception_hierarchy PASSED           [ 87%]
+> tests/unit/test_exceptions.py::test_raise_custom_exceptions PASSED       [100%]
+> ======================== 8 passed, 1 warning in 0.15s =========================
 > ```
 
 ### Fase 2: Ingestão e Indexação Idempotente com Manifesto, SHA-256 e Sincronização Segura (User Story 1 - P1)
-- [ ] **Task 2.1**: Escrever testes unitários para o carregador em `tests/unit/test_loader.py` cobrindo extração de páginas 1-indexed, metadados padronizados (`file_name`, `page`, `source`), tratamento gracioso de PDFs sem texto/escaneados (warning e skip) e diretório `base/` vazio (warning e 0 documentos sem erro).
-- [ ] **Task 2.2**: Implementar `src/indexing/loader.py` garantindo extração resiliente com páginas 1-indexed.
-- [ ] **Task 2.3**: Escrever testes unitários em `tests/unit/test_splitter.py` validando `CHUNK_SIZE=1000` e `CHUNK_OVERLAP=200`, hash SHA-256 completo do arquivo (`doc_hash`), IDs determinísticos `{doc_hash}_{chunk_index}` e omissão de hash por chunk individual.
-- [ ] **Task 2.4**: Implementar `src/indexing/splitter.py` integrado a `Settings`.
+- [x] **Task 2.1**: Escrever testes unitários para o carregador em `tests/unit/test_loader.py` cobrindo extração de páginas 1-indexed, metadados padronizados (`file_name`, `page`, `source`), tratamento gracioso de PDFs sem texto/escaneados (warning e skip) e diretório `base/` vazio (warning e 0 documentos sem erro).
+- [x] **Task 2.2**: Implementar `src/indexing/loader.py` garantindo extração resiliente com páginas 1-indexed.
+- [x] **Task 2.3**: Escrever testes unitários em `tests/unit/test_splitter.py` validando `CHUNK_SIZE=1000` e `CHUNK_OVERLAP=200`, hash SHA-256 completo do arquivo (`doc_hash`), IDs determinísticos `{doc_hash}_{chunk_index}` e omissão de hash por chunk individual.
+- [x] **Task 2.4**: Implementar `src/indexing/splitter.py` integrado a `Settings`.
+
+> **Evidência de Execução (`tests/unit/test_loader.py:9-106`, `tests/unit/test_splitter.py:10-132`)**:
+> ```text
+> tests/unit/test_loader.py::test_load_directory_nonexistent PASSED        [  9%]
+> tests/unit/test_loader.py::test_load_documents_empty_directory PASSED    [ 18%]
+> tests/unit/test_loader.py::test_load_documents_success PASSED            [ 27%]
+> tests/unit/test_loader.py::test_load_documents_multi_page_1_indexed PASSED [ 36%]
+> tests/unit/test_loader.py::test_load_documents_pdf_without_text_ignored PASSED [ 45%]
+> tests/unit/test_splitter.py::test_splitter_settings_defaults PASSED      [ 54%]
+> tests/unit/test_splitter.py::test_splitter_custom_parameters PASSED      [ 63%]
+> tests/unit/test_splitter.py::test_splitter_mandatory_metadata_and_no_chunk_hash PASSED [ 72%]
+> tests/unit/test_splitter.py::test_splitter_same_file_generates_same_ids PASSED [ 81%]
+> tests/unit/test_splitter.py::test_splitter_altered_file_generates_different_ids PASSED [ 90%]
+> tests/unit/test_splitter.py::test_splitter_sequential_chunk_index_across_pages PASSED [100%]
+> ======================== 11 passed, 1 warning in 2.35s ========================
+> ```
+
 - [ ] **Task 2.5**: Escrever testes unitários e de integração em `tests/unit/test_vector_store.py` e `tests/integration/test_persistence.py` cobrindo:
   - Criação e persistência do manifesto com `paths: list` por `doc_hash` e fingerprint global `{"embedding_model", "chunk_size", "chunk_overlap", "splitter_version", "distance_metric"}` (com nome de coleção derivado do fingerprint e não duplicado dentro dele).
   - Gravação atômica do manifesto estritamente por último (`tmp` + rename).

@@ -21,6 +21,21 @@ class VectorStoreError(HSSAssistantError):
     pass
 
 
+class VectorStoreUnavailableError(VectorStoreError):
+    """Lançada quando o banco vetorial está inacessível ou indisponível."""
+    pass
+
+
+class APIConnectionError(HSSAssistantError):
+    """Lançada quando ocorrem falhas de rede ou conexão com APIs externas."""
+    pass
+
+
+class QuotaExceededError(HSSAssistantError):
+    """Lançada quando a cota da API (ex: OpenAI) está esgotada."""
+    pass
+
+
 class RetrievalError(HSSAssistantError):
     """Lançada quando ocorrem falhas durante a busca vetorial."""
     pass
