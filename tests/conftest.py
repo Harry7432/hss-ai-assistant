@@ -40,6 +40,24 @@ def in_memory_chroma(mock_embeddings):
 
 
 @pytest.fixture
+def cosine_chroma(mock_embeddings):
+    """Instancia um ChromaDB em memória isolado com distância cosseno configurada."""
+    client = chromadb.EphemeralClient()
+    collection_name = f"test_col_cosine_{uuid.uuid4().hex}"
+    client.get_or_create_collection(
+        name=collection_name,
+        configuration={"hnsw": {"space": "cosine"}},
+    )
+    vector_store = Chroma(
+        client=client,
+        collection_name=collection_name,
+        embedding_function=mock_embeddings,
+        collection_configuration={"hnsw": {"space": "cosine"}},
+    )
+    return vector_store
+
+
+@pytest.fixture
 def temp_documents_dir(tmp_path):
     """Cria um diretório temporário para testes de ingestão de arquivos."""
     docs_dir = tmp_path / "documents"

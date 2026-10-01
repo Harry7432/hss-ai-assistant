@@ -84,6 +84,12 @@ class VectorStoreManager:
                 self.embeddings = embeddings
             else:
                 self.embeddings = CountingEmbeddings(embeddings)
+        elif vector_store is not None and getattr(vector_store, "_embedding_function", None) is not None:
+            emb_func = getattr(vector_store, "_embedding_function")
+            if hasattr(emb_func, "call_count"):
+                self.embeddings = emb_func
+            else:
+                self.embeddings = CountingEmbeddings(emb_func)
         else:
             real_emb = OpenAIEmbeddings(
                 model=self.settings.embedding_model,

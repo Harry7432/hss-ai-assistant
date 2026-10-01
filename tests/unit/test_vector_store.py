@@ -480,3 +480,42 @@ def test_vector_store_smoke_test_empty_dir_offline(tmp_path):
     assert manager.get_total_vectors() == 0
 
 
+def test_sync_directory_total_reindex_queries_new_collection(make_manager, tmp_path):
+    """Depois de sync_directory com reindexação total, manager.vector_store consulta a coleção nova."""
+    manager = make_manager()
+
+    doc_file = tmp_path / "base" / "doc.pdf"
+    doc_file.parent.mkdir(parents=True, exist_ok=True)
+    doc_file.write_bytes(b"%PDF-1.4 initial content")
+
+    doc1 = Document(
+        page_content="Conteudo antes da reindexacao.",
+        metadata={"file_name": "doc.pdf", "page": 1, "source": str(doc_file)}
+    )
+
+    with patch.object(manager.loader, "load_documents", return_value=LoadResult(documents=[doc1])):
+        manager.sync_directory()
+
+    res_before = manager.vector_store.similarity_search("antes", k=1)
+    assert len(res_before) == 1
+    assert "antes" in res_before[0].page_content
+
+    # Dispara reindexação total alterando o fingerprint (chunk_size)
+    manager.settings.chunk_size = 500
+    manager.splitter.chunk_size = 500
+
+    doc2 = Document(
+        page_content="Conteudo novo totalmente recem-indexado.",
+        metadata={"file_name": "doc.pdf", "page": 1, "source": str(doc_file)}
+    )
+
+    with patch.object(manager.loader, "load_documents", return_value=LoadResult(documents=[doc2])):
+        report = manager.sync_directory()
+        assert report.indexed == 1
+
+    # manager.vector_store deve consultar a coleção NOVA com os chunks recém-indexados
+    res_after = manager.vector_store.similarity_search("recem-indexado", k=1)
+    assert len(res_after) == 1
+    assert "Conteudo novo totalmente recem-indexado." in res_after[0].page_content
+
+

@@ -132,15 +132,28 @@
 - [ ] **Task 2.6**: Implementar `src/indexing/vector_store.py` com manifesto (`paths: list`), checagem de fingerprint (sem duplicar nome da coleção), provisionamento de nova coleção derivada, ativação na gravação atômica do manifesto por último (`tmp` + rename), remoção da antiga protegida por `--prune`, reconciliação inicial, inserção prévia, atualização de metadados em renomeados, descarte de cópias com warning e trava de poda.
 
 ### Fase 3: Recuperação Vetorial Precisa, Calibrada por Distância Cosseno e Ordenação (User Story 2 - P2)
-- [ ] **Task 3.1**: Escrever testes unitários para recuperação vetorial em `tests/unit/test_retrieval.py` cobrindo:
+- [x] **Task 3.1**: Escrever testes unitários para recuperação vetorial em `tests/unit/test_retrieval.py` cobrindo:
   - Coleção Chroma configurada explicitamente com distância cosseno via `configuration={"hnsw": {"space": "cosine"}}` (confirmado para ChromaDB 1.5.9).
   - Score tratado como distância cosseno (menor score = maior similaridade) e ordenação crescente.
   - Preservação total de metadados com páginas 1-indexed.
   - Filtragem por `RELEVANCE_THRESHOLD` como distância máxima permitida.
   - Retorno estruturado de lista vazia de `RetrievedChunk` sem lançar exceções em banco vazio ou busca sem matches.
   - Asserções impedindo interpretação de scores como probabilidade matemática ou bayesiana.
-- [ ] **Task 3.2**: Implementar `src/retrieval/search.py` fornecendo interface de busca por distância cosseno com `configuration={"hnsw": {"space": "cosine"}}` e retorno estruturado.
+- [x] **Task 3.2**: Implementar `src/retrieval/search.py` fornecendo interface de busca por distância cosseno com `configuration={"hnsw": {"space": "cosine"}}` e retorno estruturado.
 - [ ] **Task 3.3**: Implementar e executar rotina de calibração do threshold (`RELEVANCE_THRESHOLD`) em modo retrieval-only (sem geração LLM) utilizando conjunto de calibração pequeno e SEPARADO do dataset de avaliação (`eval_dataset.json`), executada fora do pytest padrão (script dedicado `scripts/calibrate_threshold.py` ou marker `@pytest.mark.calibration`) por usar a API real de embeddings para vetorizar as perguntas, ajustando o threshold no `.env` antes da integração dos guardrails na Fase 5.
+
+> **Evidência de Execução (`tests/unit/test_retrieval.py:68-249`, `tests/unit/test_vector_store.py:483-524`)**:
+> ```text
+> tests/unit/test_retrieval.py::test_retriever_search_ordering_and_metadata PASSED [ 12%]
+> tests/unit/test_retrieval.py::test_retriever_empty_collection PASSED     [ 25%]
+> tests/unit/test_retrieval.py::test_retriever_threshold_filtering PASSED  [ 37%]
+> tests/unit/test_retrieval.py::test_retriever_controlled_embeddings_ordering PASSED [ 50%]
+> tests/unit/test_retrieval.py::test_retriever_controlled_embeddings_threshold_filtering PASSED [ 62%]
+> tests/unit/test_retrieval.py::test_retriever_controlled_embeddings_metadata_preservation_and_1_indexed PASSED [ 75%]
+> tests/unit/test_retrieval.py::test_retriever_controlled_empty_collection PASSED [ 87%]
+> tests/unit/test_retrieval.py::test_retriever_score_is_raw_distance_not_normalized_relevance PASSED [100%]
+> ======================== 8 passed, 1 warning in 1.11s =========================
+> ```
 
 ### Fase 4: Geração de Respostas com Citações e Validação Estruturada (User Story 3 - P3)
 - [ ] **Task 4.1**: Escrever testes unitários em `tests/unit/test_citations.py` cobrindo:
