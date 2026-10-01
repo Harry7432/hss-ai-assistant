@@ -31,6 +31,10 @@ class Settings(BaseModel):
     chroma_persist_directory: str = Field(
         default_factory=lambda: os.getenv("CHROMA_PERSIST_DIRECTORY", "db")
     )
+    collection_name: str = Field(
+        default_factory=lambda: os.getenv("COLLECTION_NAME", "hss_docs")
+    )
+    distance_metric: str = Field(default="cosine")
     retrieval_k: int = Field(
         default_factory=lambda: int(os.getenv("RETRIEVAL_K", "4"))
     )
@@ -52,6 +56,13 @@ class Settings(BaseModel):
         default_factory=lambda: os.getenv("LANGCHAIN_PROJECT", "hss-ai-assistant")
     )
     log_level: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
+
+    @field_validator("distance_metric")
+    @classmethod
+    def validate_distance_metric(cls, v: str) -> str:
+        if v != "cosine":
+            raise ConfigurationError("distance_metric deve ser fixo em 'cosine'.")
+        return v
 
     @field_validator("chunk_size")
     @classmethod

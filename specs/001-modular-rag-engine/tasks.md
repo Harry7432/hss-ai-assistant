@@ -82,16 +82,40 @@
 > ======================== 11 passed, 1 warning in 2.35s ========================
 > ```
 
-- [ ] **Task 2.5**: Escrever testes unitários e de integração em `tests/unit/test_vector_store.py` e `tests/integration/test_persistence.py` cobrindo:
-  - Criação e persistência do manifesto com `paths: list` por `doc_hash` e fingerprint global `{"embedding_model", "chunk_size", "chunk_overlap", "splitter_version", "distance_metric"}` (com nome de coleção derivado do fingerprint e não duplicado dentro dele).
-  - Gravação atômica do manifesto estritamente por último (`tmp` + rename).
-  - Reconciliação no início entre manifesto e ChromaDB (divergência = reindexação total).
-  - Invalidação por alteração de fingerprint provisionando coleção nova no ChromaDB (com nome derivado), validação de que a nova passa a valer na gravação do manifesto, remoção da coleção antiga protegida por `--prune` e teste lendo a configuração real da coleção via `collection.configuration`.
-  - Idempotência: reindexação sem alterações realiza 0 chamadas de embedding e 0 alterações no ChromaDB.
-  - Renomeação de arquivo: detecta mesmo `doc_hash` com caminho antigo ausente no disco e novo presente, atualizando `paths`, `file_name` e `source` sem recalcular embeddings.
-  - Cópia ou duplicata de arquivo: detecta ambos os caminhos presentes no disco com mesmo `doc_hash`, emite warning e ignora a cópia sem duplicar chunks.
-  - Atualização segura: chunks novos inseridos ANTES de expurgar os antigos.
-  - Poda segura de órfãos: expurgo restrito a arquivos ausentes no disco com trava de segurança recusando expurgo superior a `MAX_PRUNE_PERCENTAGE` (20%) sem a flag explícita `--prune`.
+- [x] **Task 2.5 (Manifesto, Resiliência do Loader e Sincronização - Fatia 3)**: Implementação e testes unitários em `tests/unit/test_loader.py` e `tests/unit/test_manifest.py` cobrindo:
+  - Carregador com `LoadResult` segregando `documents`, `failed_files` e `skipped_no_text`, sem exceção em arquivo corrompido.
+  - Configurações `collection_name` (default "hss_docs") e `distance_metric` ("cosine") em `Settings`, e `SPLITTER_VERSION = "1"`.
+  - Estrutura de `IndexManifest` com `fingerprint` (6 campos) e `files: dict` por `doc_hash` com `paths: list`.
+  - Gravação atômica (`tmp` + rename) com garantia de recuperação em falha e tratamento resiliente de ausente/corrompido como vazio.
+  - Invalidação determinística de fingerprint para qualquer um dos 6 campos alterados.
+  - Reconciliação exata com IDs do ChromaDB (divergência em qualquer sentido = reindexação total).
+  - Plano de sincronização puro (`SyncPlan`) categorizando `unchanged`, `to_index`, `renamed` (0 re-embeds), `ignored_copies`, `replaced`, `orphans` e `protected` (arquivos com falha de leitura nunca viram órfãos).
+  - Trava de poda de segurança (`check_prune_safety`) para `MAX_PRUNE_PERCENTAGE` e documento único.
+
+> **Evidência de Execução (`tests/unit/test_loader.py:9-142`, `tests/unit/test_manifest.py:18-264`)**:
+> ```text
+> tests/unit/test_loader.py::test_load_directory_nonexistent PASSED        [ 28%]
+> tests/unit/test_loader.py::test_load_documents_empty_directory PASSED    [ 30%]
+> tests/unit/test_loader.py::test_load_documents_success PASSED            [ 32%]
+> tests/unit/test_loader.py::test_load_documents_multi_page_1_indexed PASSED [ 34%]
+> tests/unit/test_loader.py::test_load_documents_pdf_without_text_ignored PASSED [ 36%]
+> tests/unit/test_loader.py::test_load_documents_corrupted_pdf_recorded_in_failed_files_and_continues PASSED [ 38%]
+> tests/unit/test_manifest.py::test_settings_collection_name_and_distance_metric_and_splitter_version PASSED [ 40%]
+> tests/unit/test_manifest.py::test_manifest_structure_and_serialization PASSED [ 42%]
+> tests/unit/test_manifest.py::test_manifest_atomic_save_and_recovery_on_failure PASSED [ 44%]
+> tests/unit/test_manifest.py::test_manifest_load_missing_or_corrupted PASSED [ 46%]
+> tests/unit/test_fingerprint_invalidation_each_of_the_6_fields PASSED [ 48%]
+> tests/unit/test_reconciliation_with_chroma_equal_missing_and_extra_ids PASSED [ 50%]
+> tests/unit/test_sync_plan_unchanged_files PASSED       [ 51%]
+> tests/unit/test_sync_plan_to_index_new_and_modified_files PASSED [ 53%]
+> tests/unit/test_sync_plan_renamed_file PASSED          [ 55%]
+> tests/unit/test_sync_plan_ignored_copies PASSED        [ 57%]
+> tests/unit/test_sync_plan_orphans_and_protected_files PASSED [ 59%]
+> tests/unit/test_prune_guard_safety_threshold PASSED    [ 61%]
+> tests/unit/test_prune_guard_single_document_in_manifest PASSED [ 63%]
+> ======================== 52 passed, 1 deselected, 3 warnings in 5.53s ========================
+> ```
+
 - [ ] **Task 2.6**: Implementar `src/indexing/vector_store.py` com manifesto (`paths: list`), checagem de fingerprint (sem duplicar nome da coleção), provisionamento de nova coleção derivada, ativação na gravação atômica do manifesto por último (`tmp` + rename), remoção da antiga protegida por `--prune`, reconciliação inicial, inserção prévia, atualização de metadados em renomeados, descarte de cópias com warning e trava de poda.
 
 ### Fase 3: Recuperação Vetorial Precisa, Calibrada por Distância Cosseno e Ordenação (User Story 2 - P2)

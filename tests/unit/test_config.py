@@ -11,7 +11,8 @@ def test_settings_default_values(monkeypatch):
         "OPENAI_API_KEY", "LLM_MODEL", "EMBEDDING_MODEL",
         "CHUNK_SIZE", "CHUNK_OVERLAP", "RETRIEVAL_K",
         "RELEVANCE_THRESHOLD", "MAX_PRUNE_PERCENTAGE",
-        "DOCUMENTS_DIRECTORY", "CHROMA_PERSIST_DIRECTORY"
+        "DOCUMENTS_DIRECTORY", "CHROMA_PERSIST_DIRECTORY",
+        "COLLECTION_NAME"
     ]:
         monkeypatch.delenv(key, raising=False)
 
@@ -25,6 +26,8 @@ def test_settings_default_values(monkeypatch):
     assert settings.max_prune_percentage == 20
     assert settings.documents_directory == "base"
     assert settings.chroma_persist_directory == "db"
+    assert settings.collection_name == "hss_docs"
+    assert settings.distance_metric == "cosine"
 
 
 def test_settings_custom_values(monkeypatch):

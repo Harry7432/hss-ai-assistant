@@ -6,6 +6,8 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from src.core.config import get_settings
 
+SPLITTER_VERSION = "1"
+
 
 class DocumentSplitter:
     """Divisor de documentos com hashing SHA-256 do arquivo e IDs determinísticos."""
