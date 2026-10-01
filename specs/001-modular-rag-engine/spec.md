@@ -148,8 +148,6 @@ Como engenheiro de software, desejo inspecionar logs estruturados sem dados conf
 
 ### 2.1. Requisitos Funcionais
 
-### 2.1. Requisitos Funcionais
-
 - **FR-001**: O sistema DEVE centralizar configurações e variáveis de ambiente em `src/core/config.py`, validando existência e tipos via Dataclass / Pydantic, com carregamento de `.env` e parâmetros configuráveis para `CHUNK_SIZE` (default 1000), `CHUNK_OVERLAP` (default 200), `RETRIEVAL_K` (default 4), `RELEVANCE_THRESHOLD` (default 0.35, distância cosseno máxima, calibrado previamente via Task 3.3 em rotina retrieval-only fora do pytest padrão com dataset de calibração separado), `MAX_PRUNE_PERCENTAGE` (default 20), `LLM_MODEL`, `EMBEDDING_MODEL` e flags de observabilidade.
 - **FR-002**: O sistema DEVE implementar exceções de domínio padronizadas em `src/core/exceptions.py` para falhas de ingestão (`IngestionError`), banco vetorial indisponível (`VectorStoreUnavailableError`), falhas de conexão à API (`APIConnectionError`) e cota esgotada (`QuotaExceededError`). O sistema DEVE mapear a falha final decorrente de cota esgotada (`insufficient_quota`) da API OpenAI para a exceção `QuotaExceededError`. A ausência de contexto relevante DEVE ser tratada como retorno estruturado normal (`is_fallback=True` e lista vazia de chunks) e NÃO como lançamento de exceção.
 - **FR-003**: O sistema DEVE carregar PDFs de diretórios em `src/indexing/loader.py`, extraindo texto e metadados padronizados (`file_name`, `page` 1-indexed, `source`). PDFs escaneados ou sem camada de texto DEVEM ser registrados com log de warning e ignorados sem interromper o processamento; se a pasta `base/` estiver vazia ou ausente, o loader DEVE emitir aviso e concluir com 0 documentos sem lançar exceções não tratadas.
@@ -260,6 +258,6 @@ Os seguintes recursos são explicitamente documentados como futuras features e *
 3. **Filas de Tarefas Assíncronas (RabbitMQ / Celery / Redis)**: Processamento de ingestão de arquivos pesados em segundo plano.
 4. **Conteinerização com Docker e Docker Compose**: Empacotamento de serviços em contêineres para deploy.
 5. **Agentes Autônomos e Ferramentas (LangGraph)**: Orquestração de grafos de decisão com execução de ferramentas externas.
-6. **Avaliação Automatizada de Fidelidade (Faithfulness / LLM-as-a-judge)**: Avaliação de alucinação e conformidade factual por meio de segundo LLM juiz (posteragada para a v2).
+6. **Avaliação Automatizada de Fidelidade (Faithfulness / LLM-as-a-judge)**: Avaliação de alucinação e conformidade factual por meio de segundo LLM juiz (postergada para a v2).
 
 A arquitetura modular isola as camadas através de funções e classes com tipagem estrita, garantindo que a adição dessas tecnologias futuras ocorra por simples acoplamento de adaptadores, sem reescrita do núcleo RAG.

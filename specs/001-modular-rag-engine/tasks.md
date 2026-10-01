@@ -13,7 +13,7 @@
 | Requisito / NFR | User Story | Fase | Tarefas Correspondentes | Status | Critério de Sucesso (SC) | Critério de Verificação |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FR-001** | Fundação | Fase 1 | 1.1, 1.4, 1.5 | [ ] Pendente | SC-001 | `test_config.py` valida variáveis, tipos e padrões (1000/200, threshold calibrado na Task 3.3, 20% prune) |
-| **FR-002** | Fundação | Fase 1, 5 | 1.5, 5.1 | [ ] Pendente | SC-001, SC-010 | `test_config.py` e `exceptions.py` tratam exceções; ausência de contexto é retorno estruturado; mapeamento para `QuotaExceededError` |
+| **FR-002** | Fundação | Fase 1, 5 | 1.4, 1.5, 5.1, 5.3 | [ ] Pendente | SC-001, SC-010 | `test_config.py` e `exceptions.py` tratam exceções; ausência de contexto é retorno estruturado; mapeamento para `QuotaExceededError` |
 | **FR-003** | US 1 (P1) | Fase 2 | 2.1, 2.2 | [ ] Pendente | SC-003 | `test_loader.py` valida páginas 1-indexed, skip gracioso em PDF sem texto e pasta `base/` vazia |
 | **FR-004** | US 1 (P1) | Fase 2 | 2.3, 2.4 | [ ] Pendente | SC-002 | `test_splitter.py` valida chunks (1000/200), `doc_hash` SHA-256 completo e IDs `{doc_hash}_{chunk_index}` |
 | **FR-005** | US 1 (P1) | Fase 2 | 2.5, 2.6 | [ ] Pendente | SC-002, SC-003 | `test_vector_store.py` e `test_persistence.py` validam `paths: list`, rename vs cópia, tmp+rename por último, reconciliação, fingerprint sem duplicar `collection_name`, coleção nova ativa no manifesto e remoção antiga via `--prune` |
@@ -25,9 +25,9 @@
 | **FR-011** | US 4 (P4) | Fase 5 | 5.1, 5.3 | [ ] Pendente | SC-010 | `test_guardrails.py` valida retries nativos (`max_retries=3`) em 429 de cota e teste com transporte HTTP simulado (sleep mockado ou max_retries=0 para SC-001 < 10s) para `QuotaExceededError` |
 | **FR-012** | US 5 (P5) | Fase 6 | 6.1, 6.2 | [ ] Pendente | SC-011 | `test_memory.py` valida segregação absoluta por `session_id` e limite de janela deslizante |
 | **FR-013** | US 5 (P5) | Fase 6 | 6.3, 6.4 | [ ] Pendente | SC-012 | `test_recontextualizer.py` valida query autocontida tratando input e histórico como não confiáveis |
-| **FR-014** | US 6 (P6) | Fase 5, 7 | 5.2, 7.1, 7.2 | [ ] Pendente | SC-007, SC-013 | `test_guardrails.py` valida sanitização `sk-proj-...`; `test_telemetry.py` (7.1) e `telemetry.py` (7.2) validam LangSmith opt-in e privacidade de documentos |
+| **FR-014** | US 6 (P6) | Fase 5, 7 | 5.1, 5.2, 7.1, 7.2 | [ ] Pendente | SC-007, SC-013 | `test_guardrails.py` valida sanitização `sk-proj-...`; `test_telemetry.py` (7.1) e `telemetry.py` (7.2) validam LangSmith opt-in e privacidade de documentos |
 | **FR-015** | Compat. | Fase 8 | 8.1, 8.2, 8.3, 8.4, 8.5 | [ ] Pendente | SC-008 | Contrato CLI de `criar_db.py` (--base-dir, --prune) e `main.py` (--session-id) e testes TDD em `test_chat_loop.py` (8.1) e `test_cli_wrappers.py` (8.3) |
-| **NFR-001** | Não Funcional | Todas | 1.4, 2.1, 2.3, 2.5, 3.1, 4.1, 4.3, 5.1, 6.1, 6.3, 7.1, 8.1, 8.3, 8.6 | [ ] Pendente | SC-001 | Testes unitários executam 100% offline com `DeterministicFakeEmbedding`, `FakeListLLM` e coleções com nomes únicos (UUID) |
+| **NFR-001** | Não Funcional | Todas | 1.4, 2.1, 2.3, 2.5, 3.1, 4.1, 4.3, 5.1, 6.1, 6.3, 7.1, 7.5, 8.1, 8.3, 8.6 | [ ] Pendente | SC-001 | Testes unitários executam 100% offline com `DeterministicFakeEmbedding`, `FakeListLLM` e coleções com nomes únicos (UUID) |
 | **NFR-002** | Não Funcional | Fase 2 | 2.5, 2.6 | [ ] Pendente | SC-002 | Reindexação sem alterações gera 0 chamadas de embedding e 0 alterações no ChromaDB; teste lê configuração real da coleção |
 | **NFR-003** | Não Funcional | Fase 5 | 5.1, 5.2 | [ ] Pendente | SC-007 | Sanitização regex de credenciais `sk-proj-...` e logs sem conteúdo textual de documentos por padrão |
 | **NFR-004** | Não Funcional | Fase 7 | 7.5 | [ ] Pendente | SC-014 | `test_performance.py` valida benchmark determinístico local (busca + montagem de prompt) em < 200ms em CPU 4 cores / 8GB RAM |
