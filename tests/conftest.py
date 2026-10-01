@@ -1,7 +1,7 @@
 import os
 import pytest
 from typing import List
-from langchain_core.embeddings.fake import FakeEmbeddings
+from langchain_core.embeddings.fake import DeterministicFakeEmbedding
 from langchain_community.llms.fake import FakeListLLM
 import chromadb
 from langchain_chroma import Chroma
@@ -9,8 +9,8 @@ from langchain_chroma import Chroma
 
 @pytest.fixture
 def mock_embeddings():
-    """Retorna uma classe de embedding simulada para testes rápidos offline."""
-    return FakeEmbeddings(size=128)
+    """Retorna embeddings determinísticos para testes offline reproduzíveis."""
+    return DeterministicFakeEmbedding(size=128)
 
 
 @pytest.fixture

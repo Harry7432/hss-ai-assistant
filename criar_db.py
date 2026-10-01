@@ -5,10 +5,10 @@ Mantido para compatibilidade, delegando a execução para a arquitetura modular 
 from src.indexing.vector_store import VectorStoreManager
 
 
-def criar_db(pasta_base: str = "base") -> dict:
-    """Sincroniza os documentos da pasta base com o ChromaDB de forma idempotente."""
+def criar_db() -> dict:
+    """Sincroniza os documentos da pasta configurada com o ChromaDB de forma idempotente."""
     manager = VectorStoreManager()
-    resultado = manager.sync_directory(pasta_base)
+    resultado = manager.sync_directory(prune=False)
     print("Banco de Dados sincronizado com sucesso!")
     print(f"Resumo da sincronização: {resultado}")
     return resultado

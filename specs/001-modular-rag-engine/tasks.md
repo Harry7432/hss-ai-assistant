@@ -82,7 +82,7 @@
 > ======================== 11 passed, 1 warning in 2.35s ========================
 > ```
 
-- [x] **Task 2.5 (Manifesto, Resiliência do Loader e Sincronização - Fatia 3)**: Implementação e testes unitários em `tests/unit/test_loader.py` e `tests/unit/test_manifest.py` cobrindo:
+- [x] **Task 2.5 (Manifesto, Resiliência do Loader e Sincronização - Fatia 3 e Fatia 4)**: Implementação e testes unitários em `tests/unit/test_loader.py`, `tests/unit/test_manifest.py`, `tests/unit/test_vector_store.py` e `tests/integration/test_persistence.py` cobrindo:
   - Carregador com `LoadResult` segregando `documents`, `failed_files` e `skipped_no_text`, sem exceção em arquivo corrompido.
   - Configurações `collection_name` (default "hss_docs") e `distance_metric` ("cosine") em `Settings`, e `SPLITTER_VERSION = "1"`.
   - Estrutura de `IndexManifest` com `fingerprint` (6 campos) e `files: dict` por `doc_hash` com `paths: list`.
@@ -91,29 +91,42 @@
   - Reconciliação exata com IDs do ChromaDB (divergência em qualquer sentido = reindexação total).
   - Plano de sincronização puro (`SyncPlan`) categorizando `unchanged`, `to_index`, `renamed` (0 re-embeds), `ignored_copies`, `replaced`, `orphans` e `protected` (arquivos com falha de leitura nunca viram órfãos).
   - Trava de poda de segurança (`check_prune_safety`) para `MAX_PRUNE_PERCENTAGE` e documento único.
+  - VectorStoreManager integrado com `SyncReport`, preservação de versões anteriores em caso de falha de embedding e configuração cosseno.
 
-> **Evidência de Execução (`tests/unit/test_loader.py:9-142`, `tests/unit/test_manifest.py:18-264`)**:
+> **Evidência de Execução (`tests/unit/test_vector_store.py`, `tests/integration/test_persistence.py`, `tests/unit/test_manifest.py`)**:
 > ```text
-> tests/unit/test_loader.py::test_load_directory_nonexistent PASSED        [ 28%]
-> tests/unit/test_loader.py::test_load_documents_empty_directory PASSED    [ 30%]
-> tests/unit/test_loader.py::test_load_documents_success PASSED            [ 32%]
-> tests/unit/test_loader.py::test_load_documents_multi_page_1_indexed PASSED [ 34%]
-> tests/unit/test_loader.py::test_load_documents_pdf_without_text_ignored PASSED [ 36%]
-> tests/unit/test_loader.py::test_load_documents_corrupted_pdf_recorded_in_failed_files_and_continues PASSED [ 38%]
-> tests/unit/test_manifest.py::test_settings_collection_name_and_distance_metric_and_splitter_version PASSED [ 40%]
-> tests/unit/test_manifest.py::test_manifest_structure_and_serialization PASSED [ 42%]
-> tests/unit/test_manifest.py::test_manifest_atomic_save_and_recovery_on_failure PASSED [ 44%]
-> tests/unit/test_manifest.py::test_manifest_load_missing_or_corrupted PASSED [ 46%]
-> tests/unit/test_fingerprint_invalidation_each_of_the_6_fields PASSED [ 48%]
-> tests/unit/test_reconciliation_with_chroma_equal_missing_and_extra_ids PASSED [ 50%]
-> tests/unit/test_sync_plan_unchanged_files PASSED       [ 51%]
-> tests/unit/test_sync_plan_to_index_new_and_modified_files PASSED [ 53%]
-> tests/unit/test_sync_plan_renamed_file PASSED          [ 55%]
-> tests/unit/test_sync_plan_ignored_copies PASSED        [ 57%]
-> tests/unit/test_sync_plan_orphans_and_protected_files PASSED [ 59%]
-> tests/unit/test_prune_guard_safety_threshold PASSED    [ 61%]
-> tests/unit/test_prune_guard_single_document_in_manifest PASSED [ 63%]
-> ======================== 52 passed, 1 deselected, 3 warnings in 5.53s ========================
+> tests/integration/test_persistence.py::test_chroma_persistence_between_runs PASSED [  1%]
+> tests/integration/test_persistence.py::test_chroma_wipe_directory_keeping_manifest_reindexes_all PASSED [  3%]
+> tests/integration/test_persistence.py::test_chroma_collection_cosine_configuration PASSED [  4%]
+> tests/unit/test_manifest.py::test_settings_collection_name_and_distance_metric_and_splitter_version PASSED [ 37%]
+> tests/unit/test_manifest.py::test_manifest_structure_and_serialization PASSED [ 38%]
+> tests/unit/test_manifest.py::test_manifest_atomic_save_and_recovery_on_failure PASSED [ 40%]
+> tests/unit/test_manifest.py::test_manifest_load_missing_or_corrupted PASSED [ 41%]
+> tests/unit/test_fingerprint_invalidation_each_of_the_6_fields PASSED [ 43%]
+> tests/unit/test_reconciliation_with_chroma_equal_missing_and_extra_ids PASSED [ 45%]
+> tests/unit/test_sync_plan_unchanged_files PASSED       [ 46%]
+> tests/unit/test_sync_plan_to_index_new_and_modified_files PASSED [ 48%]
+> tests/unit/test_sync_plan_replaced_bucket_old_hash_whose_path_has_another_hash PASSED [ 50%]
+> tests/unit/test_sync_plan_renamed_file PASSED          [ 51%]
+> tests/unit/test_sync_plan_ignored_copies PASSED        [ 53%]
+> tests/unit/test_sync_plan_orphans_and_protected_files PASSED [ 54%]
+> tests/unit/test_prune_guard_safety_threshold PASSED    [ 56%]
+> tests/unit/test_prune_guard_single_document_in_manifest PASSED [ 58%]
+> tests/unit/test_vector_store.py::test_sync_directory_initial_indexing PASSED [ 80%]
+> tests/unit/test_vector_store.py::test_sync_directory_second_run_zero_calls PASSED [ 81%]
+> tests/unit/test_vector_store.py::test_sync_directory_renamed_file_zero_calls PASSED [ 83%]
+> tests/unit/test_vector_store.py::test_sync_directory_ignored_copies PASSED [ 84%]
+> tests/unit/test_vector_store.py::test_sync_directory_modified_file_insert_before_delete PASSED [ 86%]
+> tests/unit/test_vector_store.py::test_sync_directory_modified_file_embedding_failure_preserves_old PASSED [ 87%]
+> tests/unit/test_vector_store.py::test_sync_directory_orphan_deleted_only_with_prune PASSED [ 89%]
+> tests/unit/test_vector_store.py::test_sync_directory_empty_base_dir_full_manifest_does_not_prune_without_flag PASSED [ 90%]
+> tests/unit/test_vector_store.py::test_sync_directory_unreadable_file_protected PASSED [ 92%]
+> tests/unit/test_vector_store.py::test_sync_directory_fingerprint_change_triggers_total_reindex PASSED [ 93%]
+> tests/unit/test_vector_store.py::test_sync_directory_manifest_chroma_divergence_triggers_total_reindex PASSED [ 95%]
+> tests/unit/test_vector_store.py::test_sync_directory_positional_argument_raises_type_error PASSED [ 96%]
+> tests/unit/test_vector_store.py::test_criar_db_calls_sync_directory_without_positionals PASSED [ 98%]
+> tests/unit/test_vector_store.py::test_vector_store_smoke_test_empty_dir_offline PASSED [100%]
+> ================== 65 passed, 1 deselected, 3 warnings in 7.35s ==================
 > ```
 
 - [ ] **Task 2.6**: Implementar `src/indexing/vector_store.py` com manifesto (`paths: list`), checagem de fingerprint (sem duplicar nome da coleção), provisionamento de nova coleção derivada, ativação na gravação atômica do manifesto por último (`tmp` + rename), remoção da antiga protegida por `--prune`, reconciliação inicial, inserção prévia, atualização de metadados em renomeados, descarte de cópias com warning e trava de poda.

@@ -220,6 +220,42 @@ def test_sync_plan_to_index_new_and_modified_files():
     assert plan.unchanged == []
 
 
+def test_sync_plan_replaced_bucket_old_hash_whose_path_has_another_hash():
+    """Valida explicitamente o bucket 'replaced' do SyncPlan:
+    Um arquivo com hash antigo cujo caminho em disco agora possui outro hash.
+    O hash antigo DEVE ir para plan.replaced (e NÃO para plan.orphans).
+    O novo caminho/hash DEVE ir para plan.to_index.
+    """
+    old_hash = "hash_antigo_conteudo_v1"
+    new_hash = "hash_novo_conteudo_v2"
+    doc_path = "base/documento_atualizado.pdf"
+
+    manifest = IndexManifest(
+        files={
+            old_hash: {
+                "paths": [doc_path],
+                "file_name": "documento_atualizado.pdf",
+                "chunk_ids": [f"{old_hash}_0", f"{old_hash}_1"],
+            }
+        }
+    )
+
+    files_on_disk = {
+        doc_path: new_hash
+    }
+    failed_files = set()
+
+    plan = create_sync_plan(files_on_disk, failed_files, manifest)
+
+    assert plan.replaced == {old_hash}, "Hash antigo deve ser classificado explicitamente como 'replaced'"
+    assert plan.orphans == set(), "Hash substituído NÃO deve ser classificado como 'orphans'"
+    assert plan.to_index == {doc_path: new_hash}, "Novo hash deve ser marcado para indexação"
+    assert plan.unchanged == []
+    assert plan.renamed == []
+    assert plan.ignored_copies == []
+    assert plan.protected == set()
+
+
 def test_sync_plan_renamed_file():
     """Valida que arquivo renomeado (caminho antigo ausente, novo presente, mesmo hash) é detectado."""
     manifest = IndexManifest(

@@ -9,6 +9,26 @@ from src.core.config import get_settings
 SPLITTER_VERSION = "1"
 
 
+def compute_file_hash(source: Path | str, fallback_content: str = "") -> str:
+    """Calcula o hash SHA-256 completo lendo os bytes do arquivo em source.
+    
+    Caso o arquivo não exista no disco (documentos em memória ou testes sintéticos),
+    utiliza o conteúdo e a origem como fallback.
+    """
+    if source:
+        try:
+            path = Path(source)
+            if path.is_file():
+                hasher = hashlib.sha256()
+                with open(path, "rb") as f:
+                    while byte_block := f.read(65536):
+                        hasher.update(byte_block)
+                return hasher.hexdigest()
+        except Exception:
+            pass
+    return hashlib.sha256((str(source) + "_" + fallback_content).encode("utf-8")).hexdigest()
+
+
 class DocumentSplitter:
     """Divisor de documentos com hashing SHA-256 do arquivo e IDs determinísticos."""
 
@@ -30,23 +50,7 @@ class DocumentSplitter:
         )
 
     def _compute_file_hash(self, source: str, fallback_content: str = "") -> str:
-        """Calcula o hash SHA-256 completo lendo os bytes do arquivo em source.
-        
-        Caso o arquivo não exista no disco (documentos em memória ou testes sintéticos),
-        utiliza o conteúdo e a origem como fallback.
-        """
-        if source:
-            try:
-                path = Path(source)
-                if path.is_file():
-                    hasher = hashlib.sha256()
-                    with open(path, "rb") as f:
-                        while byte_block := f.read(65536):
-                            hasher.update(byte_block)
-                    return hasher.hexdigest()
-            except Exception:
-                pass
-        return hashlib.sha256((str(source) + "_" + fallback_content).encode("utf-8")).hexdigest()
+        return compute_file_hash(source, fallback_content)
 
     def split_documents(self, documents: List[Document]) -> List[Document]:
         """Divide documentos em fragmentos com metadados enriquecidos e IDs determinísticos.
